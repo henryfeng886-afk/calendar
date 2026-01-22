@@ -8,6 +8,9 @@ import {
   type Futures,
 } from "@/lib/futures-data";
 import { cn } from "@/lib/utils";
+import { KlineChart } from "@/components/kline-chart";
+import { generateMockKlineData } from "@/lib/kline-data";
+import { useMemo } from "react";
 
 export default function FuturesDetailScreen() {
   const router = useRouter();
@@ -23,6 +26,12 @@ export default function FuturesDetailScreen() {
   } catch (error) {
     console.error("Failed to parse futures data:", error);
   }
+
+  // 生成模拟K线数据
+  const klineData = useMemo(() => {
+    if (!futures) return [];
+    return generateMockKlineData(futures.price, 60, 60000); // 60条1分钟K线
+  }, [futures]);
 
   if (!futures) {
     return (
@@ -98,6 +107,28 @@ export default function FuturesDetailScreen() {
             </View>
           </View>
         </View>
+
+        {/* K线图表 */}
+        {klineData.length > 0 && (
+          <View className="mb-4">
+            <KlineChart data={klineData} height={250} showSMA={true} />
+          </View>
+        )}
+
+        {/* 查看详细K线按钮 */}
+        <Pressable
+          onPress={() => {
+            router.push({
+              pathname: "/kline-chart",
+              params: {
+                futuresJson: JSON.stringify(futures),
+              },
+            });
+          }}
+          className="mb-4 px-6 py-3 bg-primary rounded-lg items-center active:opacity-80"
+        >
+          <Text className="text-background font-semibold">查看详细K线走势</Text>
+        </Pressable>
 
         {/* 交易信息 */}
         <View className="bg-surface rounded-2xl p-6 border border-border">
